@@ -2,11 +2,16 @@ import { useEffect, useId, useRef, useState } from "react";
 import { SharedDefs, filterIds } from "../shared/filters";
 import type { MotifProps } from "../shared/types";
 
+const ARC_COUNT = { calm: 2, normal: 4, intense: 8 } as const;
+const HOVER_ARC_BONUS = { calm: 0, normal: 2, intense: 2 } as const;
+const SPEED = { calm: 0.4, normal: 1, intense: 2 } as const;
+const JITTER = { calm: 1.4, normal: 2.4, intense: 3.2 } as const;
+
 /**
  * Tesla / plazma topu — merkezden çepere zigzag arc'lar. Cam küre.
- * Sürekli plazma akar (Atom'da hover'da var, burası statik tema).
+ * intensity: arc sayısı + jitter + hız değişir.
  */
-export function PlasmaBallMotif({ palette, hovered }: MotifProps) {
+export function PlasmaBallMotif({ palette, hovered, intensity = "normal" }: MotifProps) {
   const id = useId().replace(/:/g, "");
   const F = filterIds(id);
   const sphereGrad = `pb-${id}`;
@@ -28,7 +33,6 @@ export function PlasmaBallMotif({ palette, hovered }: MotifProps) {
     return () => cancelAnimationFrame(raf);
   }, []);
 
-  // 4 arc — merkezden farklı yönlere giden zigzag yıldırım
   const buildArc = (angle: number, segCount: number, jitter: number, phaseSeed: number) => {
     const targetX = Math.cos(angle) * 16;
     const targetY = Math.sin(angle) * 16;
@@ -45,11 +49,14 @@ export function PlasmaBallMotif({ palette, hovered }: MotifProps) {
     return p;
   };
 
-  const speed = hoveredRef.current ? 2 : 1;
-  const arcCount = hoveredRef.current ? 6 : 4;
+  const speedBase = SPEED[intensity];
+  const speed = hoveredRef.current ? speedBase * 2 : speedBase;
+  const baseArcCount = ARC_COUNT[intensity];
+  const arcCount = baseArcCount + (hoveredRef.current ? HOVER_ARC_BONUS[intensity] : 0);
+  const jitter = JITTER[intensity];
   const arcs = Array.from({ length: arcCount }, (_, i) => {
     const baseAngle = (i / arcCount) * Math.PI * 2 + t * speed * 0.3;
-    return buildArc(baseAngle, 8, 2.4, i * 1.7);
+    return buildArc(baseAngle, 8, jitter, i * 1.7);
   });
 
   return (

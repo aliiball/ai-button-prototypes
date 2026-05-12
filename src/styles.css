@@ -56,6 +56,57 @@ body {
     0 14px 36px rgba(60, 20, 120, 0.55);
 }
 
+/* GlassShell — warm (amber/turuncu sıcak cam) */
+.glass-shell-warm {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 219, 161, 0.18) 0%,
+    rgba(252, 165, 78, 0.05) 50%,
+    rgba(254, 215, 170, 0.14) 100%
+  );
+  backdrop-filter: blur(14px) saturate(180%);
+  -webkit-backdrop-filter: blur(14px) saturate(180%);
+  border: 1px solid rgba(255, 180, 120, 0.22);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 240, 210, 0.32),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3),
+    0 14px 36px rgba(120, 60, 20, 0.55);
+}
+
+/* GlassShell — ocean (cyan/indigo derin deniz cam) */
+.glass-shell-ocean {
+  background: linear-gradient(
+    180deg,
+    rgba(165, 243, 252, 0.18) 0%,
+    rgba(34, 211, 238, 0.05) 50%,
+    rgba(207, 250, 254, 0.12) 100%
+  );
+  backdrop-filter: blur(14px) saturate(180%);
+  -webkit-backdrop-filter: blur(14px) saturate(180%);
+  border: 1px solid rgba(120, 200, 240, 0.22);
+  box-shadow:
+    inset 0 1px 0 rgba(220, 250, 255, 0.3),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3),
+    0 14px 36px rgba(20, 60, 120, 0.55);
+}
+
+/* GlassShell — cyber (neon yeşil cam) */
+.glass-shell-cyber {
+  background: linear-gradient(
+    180deg,
+    rgba(187, 247, 208, 0.18) 0%,
+    rgba(74, 222, 128, 0.05) 50%,
+    rgba(220, 252, 231, 0.12) 100%
+  );
+  backdrop-filter: blur(14px) saturate(180%);
+  -webkit-backdrop-filter: blur(14px) saturate(180%);
+  border: 1px solid rgba(130, 220, 150, 0.22);
+  box-shadow:
+    inset 0 1px 0 rgba(236, 252, 203, 0.3),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3),
+    0 14px 36px rgba(20, 100, 40, 0.55);
+}
+
 .glass-shell-shadow {
   position: absolute;
   inset: 0;

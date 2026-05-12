@@ -1,4 +1,6 @@
-export type PaletteId = "iridescent";
+export type PaletteId = "iridescent" | "warm" | "ocean" | "cyber";
+
+export type IntensityId = "calm" | "normal" | "intense";
 
 export type Palette = {
   id: PaletteId;
@@ -105,6 +107,8 @@ export type MotifProps = {
   palette: Palette;
   hovered: boolean;
   active: boolean;
+  /** Opsiyonel yoğunluk parametresi — atölye modunda kullanılır, galeri modunda "normal" gibi davranır. */
+  intensity?: IntensityId;
 };
 
 export type MotifEntry = {
@@ -112,4 +116,19 @@ export type MotifEntry = {
   label: string;
   description: string;
   Component: React.ComponentType<MotifProps>;
+};
+
+export type VariantProps = {
+  palette: Palette;
+  hovered: boolean;
+  active: boolean;
+  intensity: IntensityId;
+};
+
+export type StyleVariant = {
+  id: string;
+  parentId: MotifId;
+  label: string;
+  description: string;
+  Component: React.ComponentType<VariantProps>;
 };

@@ -3,15 +3,24 @@ import { motion } from "framer-motion";
 import { SharedDefs, filterIds } from "../shared/filters";
 import type { MotifProps } from "../shared/types";
 
+const PULSE_DUR = { calm: 2.6, normal: 1.8, intense: 1.0 } as const;
+const FLARE_COUNT = { calm: 10, normal: 14, intense: 20 } as const;
+const ROT_DUR = { calm: 28, normal: 18, intense: 9 } as const;
+const RING_COUNT = { calm: 2, normal: 3, intense: 4 } as const;
+
 /**
  * Pulsar — merkezden dışa periyodik radyal flare patlaması.
+ * intensity: flare/ring sayısı + atış frekansı değişir.
  */
-export function PulsarMotif({ palette, hovered }: MotifProps) {
+export function PulsarMotif({ palette, hovered, intensity = "normal" }: MotifProps) {
   const id = useId().replace(/:/g, "");
   const F = filterIds(id);
   const coreGrad = `pl-c-${id}`;
-  const flareCount = 14;
-  const dur = hovered ? 1 : 1.8;
+  const flareCount = FLARE_COUNT[intensity];
+  const ringCount = RING_COUNT[intensity];
+  const baseDur = PULSE_DUR[intensity];
+  const dur = hovered ? baseDur * 0.55 : baseDur;
+  const rotDur = hovered ? ROT_DUR[intensity] * 0.45 : ROT_DUR[intensity];
 
   return (
     <svg viewBox="-30 -30 60 60" aria-hidden width="100%" height="100%">
@@ -40,7 +49,7 @@ export function PulsarMotif({ palette, hovered }: MotifProps) {
       {/* radyal flare ışınları — dönen */}
       <motion.g
         animate={{ rotate: 360 }}
-        transition={{ duration: hovered ? 8 : 18, repeat: Infinity, ease: "linear" }}
+        transition={{ duration: rotDur, repeat: Infinity, ease: "linear" }}
         style={{ transformOrigin: "center" }}
       >
         {Array.from({ length: flareCount }).map((_, i) => (
@@ -60,7 +69,7 @@ export function PulsarMotif({ palette, hovered }: MotifProps) {
       </motion.g>
 
       {/* dış genleşen halkalar (atış) */}
-      {[0, 1, 2].map((i) => (
+      {Array.from({ length: ringCount }).map((_, i) => (
         <motion.circle
           key={i}
           cx="0"

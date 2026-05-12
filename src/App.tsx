@@ -1,14 +1,25 @@
 import { useEffect, useRef, useState } from "react";
 import { AIButton, MOTIFS, iridescent } from "./ai-button";
 import type { MotifEntry } from "./ai-button";
+import { AtelierView } from "./atelier-view";
 
-/**
- * Galeri sayfası. Tek iridescent palette, 28 motif, responsive 4-sütun grid.
- * Görünmeyen kartlar IntersectionObserver ile duraklatılır.
- */
+type Tab = "gallery" | "atelier";
+
 export default function App() {
   const [toast, setToast] = useState<string | null>(null);
   const toastTimer = useRef<number | null>(null);
+  const [tab, setTab] = useState<Tab>(() =>
+    typeof location !== "undefined" && location.hash.startsWith("#atelier")
+      ? "atelier"
+      : "gallery",
+  );
+
+  // Tab değiştiğinde hash'i temizle (atölye kendi içinde yönetir).
+  useEffect(() => {
+    if (tab === "gallery" && location.hash.startsWith("#atelier")) {
+      history.replaceState(null, "", location.pathname + location.search);
+    }
+  }, [tab]);
 
   const handlePick = (motif: MotifEntry) => {
     setToast(motif.label);
@@ -19,20 +30,9 @@ export default function App() {
 
   return (
     <div className="min-h-screen pb-24">
-      <Header />
+      <Header tab={tab} onTabChange={setTab} />
 
-      <main className="mx-auto max-w-6xl px-4 sm:px-8 py-8 sm:py-12">
-        <ul className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
-          {MOTIFS.map((motif, idx) => (
-            <MotifCard
-              key={motif.id}
-              motif={motif}
-              index={idx}
-              onPick={handlePick}
-            />
-          ))}
-        </ul>
-      </main>
+      {tab === "gallery" ? <GalleryView onPick={handlePick} /> : <AtelierView />}
 
       <Footer />
 
@@ -49,22 +49,78 @@ export default function App() {
   );
 }
 
-function Header() {
+function Header({
+  tab,
+  onTabChange,
+}: {
+  tab: Tab;
+  onTabChange: (t: Tab) => void;
+}) {
   return (
     <header className="border-b border-white/5 bg-page-bg/40 backdrop-blur">
-      <div className="mx-auto max-w-6xl px-4 sm:px-8 py-5 sm:py-7 flex flex-col gap-2">
+      <div className="mx-auto max-w-6xl px-4 sm:px-8 py-5 sm:py-7 flex flex-col items-center text-center gap-3">
         <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-page-mute">
           Atölye · AI Buton Prototipleri
         </p>
         <h1 className="font-serif text-2xl sm:text-3xl md:text-[42px] font-light tracking-tight leading-tight">
           {MOTIFS.length} motif · iridescent palet — AI buton atölyesi
         </h1>
-        <p className="text-sm text-page-mute max-w-2xl">
-          Her kart bir AI buton motifinin canlı hâli. Hover'da motifin etkileşim
-          animasyonu açılır. Tıkla — alt-orta toast'ta seçim görünür.
+        <p className="text-sm text-page-mute md:whitespace-nowrap">
+          Her kart bir AI buton motifinin canlı hâli. Hover'da motifin etkileşim animasyonu açılır. Tıkla — alt-orta toast'ta seçim görünür.
         </p>
+
+        {/* Tab şeridi */}
+        <div className="mt-2 inline-flex p-1 rounded-full bg-page-panel/60 border border-white/10">
+          <TabButton active={tab === "gallery"} onClick={() => onTabChange("gallery")}>
+            Galeri
+          </TabButton>
+          <TabButton active={tab === "atelier"} onClick={() => onTabChange("atelier")}>
+            Atölye
+          </TabButton>
+        </div>
       </div>
     </header>
+  );
+}
+
+function TabButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`px-4 py-1.5 rounded-full text-xs font-mono uppercase tracking-[0.18em] transition-colors ${
+        active
+          ? "bg-page-ink text-page-bg"
+          : "text-page-mute hover:text-page-ink"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function GalleryView({ onPick }: { onPick: (m: MotifEntry) => void }) {
+  return (
+    <main className="mx-auto max-w-6xl px-4 sm:px-8 py-8 sm:py-12">
+      <ul className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
+        {MOTIFS.map((motif, idx) => (
+          <MotifCard
+            key={motif.id}
+            motif={motif}
+            index={idx}
+            onPick={onPick}
+          />
+        ))}
+      </ul>
+    </main>
   );
 }
 

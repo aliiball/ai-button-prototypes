@@ -5,11 +5,20 @@ import { useOrbit } from "../shared/use-orbit";
 import { useBolts } from "../shared/use-bolt";
 import type { MotifProps } from "../shared/types";
 
-export function AtomMotif({ palette, hovered }: MotifProps) {
+const PERIOD = { calm: 12, normal: 7, intense: 4 } as const;
+const PULSE_DUR = { calm: 2.4, normal: 1.6, intense: 1.0 } as const;
+const SCALE_BREATH = {
+  calm: [1, 1.03, 1],
+  normal: [1, 1.06, 1],
+  intense: [1, 1.1, 1],
+} as const;
+
+export function AtomMotif({ palette, hovered, intensity = "normal" }: MotifProps) {
   const id = useId().replace(/:/g, "");
   const F = filterIds(id);
-  const positions = useOrbit({ rx: 22, ry: 9, period: 7, count: 3 });
-  const bolts = useBolts(positions, hovered);
+  const positions = useOrbit({ rx: 22, ry: 9, period: PERIOD[intensity], count: 3 });
+  const boltsActive = intensity === "intense" || hovered;
+  const bolts = useBolts(positions, boltsActive);
   const nucleusGrad = `nuc-${id}`;
   const auraGrad = `aura-${id}`;
 
@@ -19,7 +28,7 @@ export function AtomMotif({ palette, hovered }: MotifProps) {
       aria-hidden
       width="100%"
       height="100%"
-      animate={{ scale: hovered ? 1.12 : [1, 1.06, 1] }}
+      animate={{ scale: hovered ? 1.12 : [...SCALE_BREATH[intensity]] }}
       transition={
         hovered
           ? { duration: 0.3 }
@@ -133,7 +142,7 @@ export function AtomMotif({ palette, hovered }: MotifProps) {
           r="7"
           fill={`url(#${auraGrad})`}
           animate={{ scale: [1, 1.25, 1], opacity: [0.55, 0.95, 0.55] }}
-          transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+          transition={{ duration: PULSE_DUR[intensity], repeat: Infinity, ease: "easeInOut" }}
           style={{ transformOrigin: "center" }}
         />
         <circle

@@ -3,21 +3,25 @@ import { motion } from "framer-motion";
 import { SharedDefs, filterIds } from "../shared/filters";
 import type { MotifProps } from "../shared/types";
 
+const SPEED_MULT = { calm: 1.6, normal: 1, intense: 0.5 } as const;
+const PULSE_DUR = { calm: 2.4, normal: 1.8, intense: 1.2 } as const;
+
 /**
  * Konsantrik döndürülmüş ellipse'ler = tünel/portal perspektifi.
- * Farklı hızlarla rotasyon = parallax.
+ * intensity: ring döndürme süresi çarpılır (calm yavaş, intense hızlı).
  */
-export function VortexMotif({ palette, hovered }: MotifProps) {
+export function VortexMotif({ palette, hovered, intensity = "normal" }: MotifProps) {
   const id = useId().replace(/:/g, "");
   const F = filterIds(id);
   const centerGrad = `vx-c-${id}`;
+  const mult = SPEED_MULT[intensity];
 
   const rings = [
-    { rx: 22, ry: 10, rot: 0, dur: 14, stroke: palette.auraMid, sw: 0.6, op: 0.4 },
-    { rx: 18, ry: 9, rot: 30, dur: 11, stroke: palette.orbitMid, sw: 0.7, op: 0.55 },
-    { rx: 14, ry: 7, rot: 60, dur: 8, stroke: palette.boltMid, sw: 0.8, op: 0.7 },
-    { rx: 10, ry: 5, rot: 90, dur: 6, stroke: palette.electron, sw: 0.9, op: 0.85 },
-    { rx: 6, ry: 3, rot: 120, dur: 4, stroke: palette.boltBright, sw: 1.1, op: 1 },
+    { rx: 22, ry: 10, rot: 0, dur: 14 * mult, stroke: palette.auraMid, sw: 0.6, op: 0.4 },
+    { rx: 18, ry: 9, rot: 30, dur: 11 * mult, stroke: palette.orbitMid, sw: 0.7, op: 0.55 },
+    { rx: 14, ry: 7, rot: 60, dur: 8 * mult, stroke: palette.boltMid, sw: 0.8, op: 0.7 },
+    { rx: 10, ry: 5, rot: 90, dur: 6 * mult, stroke: palette.electron, sw: 0.9, op: 0.85 },
+    { rx: 6, ry: 3, rot: 120, dur: 4 * mult, stroke: palette.boltBright, sw: 1.1, op: 1 },
   ];
 
   return (
@@ -74,7 +78,7 @@ export function VortexMotif({ palette, hovered }: MotifProps) {
         r="3.5"
         fill={`url(#${centerGrad})`}
         animate={{ scale: hovered ? [1, 1.3, 1] : [1, 1.1, 1] }}
-        transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+        transition={{ duration: PULSE_DUR[intensity], repeat: Infinity, ease: "easeInOut" }}
         style={{ transformOrigin: "center" }}
       />
       <circle

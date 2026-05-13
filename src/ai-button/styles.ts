@@ -3,7 +3,6 @@ import { AtomMotif } from "./motifs/atom";
 import { VortexMotif } from "./motifs/vortex";
 import { PlasmaBallMotif } from "./motifs/plasma-ball";
 import { PulsarMotif } from "./motifs/pulsar";
-import { AtomQuarkStyle, AtomMinimalStyle } from "./styles/atom-styles";
 import { VortexFunnelStyle, VortexGalacticDiskStyle } from "./styles/vortex-styles";
 import { PlasmaSleepingStyle, PlasmaPulseSyncStyle } from "./styles/plasma-styles";
 import { PulsarLighthouseStyle, PulsarHeartbeatStyle } from "./styles/pulsar-styles";
@@ -13,10 +12,10 @@ import { PulsarLighthouseStyle, PulsarHeartbeatStyle } from "./styles/pulsar-sty
  * "Klasik" stiller mevcut motifleri sarar (intensity opsiyonel olduğu için contravariance ile uyumlu).
  */
 export const STYLES: StyleVariant[] = [
-  // Atom
+  // Atom — tek component, 3 preset (orbitPlaneCount/electronCount ile topoloji değişir)
   { id: "atom-classic",  parentId: "atom",        label: "Klasik",   description: "3 eliptik orbit, hover'da fractal yıldırım.",       Component: AtomMotif },
-  { id: "atom-quark",    parentId: "atom",        label: "Quark",    description: "N elektron tek yatay düzlemde eşit aralıklı.",     Component: AtomQuarkStyle },
-  { id: "atom-minimal",  parentId: "atom",        label: "Minimal",  description: "Tek orbit, parlayan çekirdek; hover'da 2. orbit.", Component: AtomMinimalStyle },
+  { id: "atom-quark",    parentId: "atom",        label: "Quark",    description: "N elektron tek yatay düzlemde eşit aralıklı.",     Component: AtomMotif },
+  { id: "atom-minimal",  parentId: "atom",        label: "Minimal",  description: "Tek orbit, parlayan çekirdek; sade.",                Component: AtomMotif },
 
   // Vortex
   { id: "vortex-classic",  parentId: "vortex", label: "Klasik",        description: "5 konsantrik döndürülmüş ellipse.",   Component: VortexMotif },

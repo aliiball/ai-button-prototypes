@@ -2,27 +2,55 @@ import { useId } from "react";
 import { motion } from "framer-motion";
 import { SharedDefs, filterIds } from "../shared/filters";
 import type { MotifProps } from "../shared/types";
+import type { VortexConfig } from "../../atelier/configs";
 
 const SPEED_MULT = { calm: 1.6, normal: 1, intense: 0.5 } as const;
 const PULSE_DUR = { calm: 2.4, normal: 1.8, intense: 1.2 } as const;
 
-/**
- * Konsantrik döndürülmüş ellipse'ler = tünel/portal perspektifi.
- * intensity: ring döndürme süresi çarpılır (calm yavaş, intense hızlı).
- */
-export function VortexMotif({ palette, hovered, intensity = "normal" }: MotifProps) {
+function resolveConfig(intensity: "calm" | "normal" | "intense", config?: unknown): VortexConfig {
+  const def: VortexConfig = {
+    ringCount: 5,
+    baseRotation: 14 * SPEED_MULT[intensity],
+    ringFalloff: 0.7,
+    outerRx: 22,
+    aspect: 2.2,
+    centerHole: 3.5,
+    auraStrength: 0.15,
+    strokeWidth: 0.8,
+    hoverSpeedBoost: 2.5,
+    rotationDir: "cw",
+  };
+  return { ...def, ...(config as Partial<VortexConfig> | undefined) };
+}
+
+export function VortexMotif({ palette, hovered, intensity = "normal", config }: MotifProps) {
   const id = useId().replace(/:/g, "");
   const F = filterIds(id);
+  const c = resolveConfig(intensity, config);
   const centerGrad = `vx-c-${id}`;
-  const mult = SPEED_MULT[intensity];
 
-  const rings = [
-    { rx: 22, ry: 10, rot: 0, dur: 14 * mult, stroke: palette.auraMid, sw: 0.6, op: 0.4 },
-    { rx: 18, ry: 9, rot: 30, dur: 11 * mult, stroke: palette.orbitMid, sw: 0.7, op: 0.55 },
-    { rx: 14, ry: 7, rot: 60, dur: 8 * mult, stroke: palette.boltMid, sw: 0.8, op: 0.7 },
-    { rx: 10, ry: 5, rot: 90, dur: 6 * mult, stroke: palette.electron, sw: 0.9, op: 0.85 },
-    { rx: 6, ry: 3, rot: 120, dur: 4 * mult, stroke: palette.boltBright, sw: 1.1, op: 1 },
+  // Renk paleti — N ring boyunca uzanan stroke katmanları
+  const palette2 = [
+    palette.auraMid,
+    palette.orbitMid,
+    palette.boltMid,
+    palette.electron,
+    palette.boltBright,
+    palette.orbitHighlight,
+    palette.nucleusMid,
+    palette.boltBright,
   ];
+
+  const rings = Array.from({ length: c.ringCount }, (_, i) => {
+    const t = i / Math.max(c.ringCount - 1, 1);
+    const rx = c.outerRx - i * ((c.outerRx - 6) / Math.max(c.ringCount - 1, 1));
+    const ry = rx / c.aspect;
+    const dur = c.baseRotation * Math.pow(c.ringFalloff, i);
+    const rot = (i * 30) % 360;
+    const sw = c.strokeWidth + i * 0.07;
+    const op = 0.4 + (i / Math.max(c.ringCount - 1, 1)) * 0.6;
+    return { rx, ry, rot, dur, stroke: palette2[i % palette2.length], sw, op, isCloseToCenter: i >= c.ringCount - 2 };
+  });
 
   return (
     <svg viewBox="-30 -30 60 60" aria-hidden width="100%" height="100%">
@@ -35,59 +63,41 @@ export function VortexMotif({ palette, hovered, intensity = "normal" }: MotifPro
         </radialGradient>
       </defs>
 
-      {/* outer aura halo */}
-      <circle
-        cx="0"
-        cy="0"
-        r="24"
-        fill={palette.auraMid}
-        opacity={0.15}
-        filter={F.halo}
-      />
+      <circle cx="0" cy="0" r="24" fill={palette.auraMid} opacity={c.auraStrength} filter={F.halo} />
 
-      {rings.map((r, i) => (
-        <motion.g
-          key={i}
-          animate={{ rotate: 360 }}
-          transition={{
-            duration: hovered ? r.dur / 2.5 : r.dur,
-            repeat: Infinity,
-            ease: "linear",
-          }}
-          style={{ transformOrigin: "center" }}
-        >
-          <ellipse
-            cx="0"
-            cy="0"
-            rx={r.rx}
-            ry={r.ry}
-            transform={`rotate(${r.rot})`}
-            fill="none"
-            stroke={r.stroke}
-            strokeWidth={r.sw}
-            opacity={r.op}
-            filter={i >= 3 ? F.glow : F.soft}
-          />
-        </motion.g>
-      ))}
+      {rings.map((r, i) => {
+        const dirSign = c.rotationDir === "ccw" ? -1 : c.rotationDir === "alternate" ? (i % 2 === 0 ? 1 : -1) : 1;
+        return (
+          <motion.g
+            key={i}
+            animate={{ rotate: 360 * dirSign }}
+            transition={{
+              duration: hovered ? r.dur / c.hoverSpeedBoost : r.dur,
+              repeat: Infinity,
+              ease: "linear",
+            }}
+            style={{ transformOrigin: "center" }}
+          >
+            <ellipse
+              cx="0" cy="0" rx={r.rx} ry={r.ry}
+              transform={`rotate(${r.rot})`}
+              fill="none" stroke={r.stroke} strokeWidth={r.sw}
+              opacity={r.op} filter={r.isCloseToCenter ? F.glow : F.soft}
+            />
+          </motion.g>
+        );
+      })}
 
-      {/* center hole — koyu çekirdek */}
       <motion.circle
         cx="0"
         cy="0"
-        r="3.5"
+        r={c.centerHole}
         fill={`url(#${centerGrad})`}
         animate={{ scale: hovered ? [1, 1.3, 1] : [1, 1.1, 1] }}
         transition={{ duration: PULSE_DUR[intensity], repeat: Infinity, ease: "easeInOut" }}
         style={{ transformOrigin: "center" }}
       />
-      <circle
-        cx="0"
-        cy="0"
-        r="1.4"
-        fill={palette.nucleusCore}
-        filter={F.glow}
-      />
+      <circle cx="0" cy="0" r="1.4" fill={palette.nucleusCore} filter={F.glow} />
     </svg>
   );
 }

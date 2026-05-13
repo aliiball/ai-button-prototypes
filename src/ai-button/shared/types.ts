@@ -109,6 +109,8 @@ export type MotifProps = {
   active: boolean;
   /** Opsiyonel yoğunluk parametresi — atölye modunda kullanılır, galeri modunda "normal" gibi davranır. */
   intensity?: IntensityId;
+  /** Opsiyonel atölye config'i — verilirse intensity-based defaults'u override eder. */
+  config?: unknown;
 };
 
 export type MotifEntry = {
@@ -123,6 +125,7 @@ export type VariantProps = {
   hovered: boolean;
   active: boolean;
   intensity: IntensityId;
+  config?: unknown;
 };
 
 export type StyleVariant = {
